@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: ./build.sh --ci
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UpdateBar
+          path: dist/UpdateBar.zip
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/UpdateBar.zip
+          generate_release_notes: true

@@ -12,7 +12,7 @@ e te li segnala con due frecce e un puntino colorato.
 [![macOS](https://img.shields.io/badge/macOS-13%2B-000000?logo=apple&logoColor=white)](#requisiti)
 [![Swift](https://img.shields.io/badge/Swift-SwiftUI-F05138?logo=swift&logoColor=white)](UpdateBar.swift)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Xcode](https://img.shields.io/badge/Xcode-non%20richiesto-lightgrey)](#installazione)
+[![Release](https://img.shields.io/github/v/release/AndreaPolazzo/UpdateBar?label=download)](https://github.com/AndreaPolazzo/UpdateBar/releases/latest)
 
 [Funzionalità](#-funzionalità) · [Installazione](#-installazione) · [Come funziona](#-come-funziona) · [FAQ](#-faq) · [Roadmap](#-roadmap)
 
@@ -57,31 +57,38 @@ Mentre controlla, le frecce diventano semitrasparenti.
 
 ## 📦 Installazione
 
+### Download (consigliato)
+
+1. Scarica **[`UpdateBar.zip`](https://github.com/AndreaPolazzo/UpdateBar/releases/latest/download/UpdateBar.zip)** dall'ultima [Release](https://github.com/AndreaPolazzo/UpdateBar/releases/latest)
+2. Estrai lo zip e trascina **UpdateBar.app** in **Applicazioni**
+3. Aprila. La prima volta macOS la blocca perché non è firmata con un Developer ID Apple:
+   vai in **Impostazioni di Sistema → Privacy e sicurezza** e clicca **Apri comunque**
+
+> [!NOTE]
+> In alternativa, da Terminale: `xattr -dr com.apple.quarantine /Applications/UpdateBar.app`
+
+Funziona su Mac Apple Silicon e Intel (universal binary).
+
+### Compilare dai sorgenti
+
 Serve solo un Mac con i **Command Line Tools** (non Xcode):
 
 ```bash
 xcode-select --install
-```
-
-Poi:
-
-```bash
 git clone https://github.com/AndreaPolazzo/UpdateBar.git
 cd UpdateBar
 ./build.sh
 ```
 
 Lo script compila, firma ad-hoc, installa l'app in `/Applications` e la avvia.
-Da quel momento la cartella clonata non serve più: puoi cancellarla.
+Da quel momento la cartella clonata non serve più.
 
 > [!TIP]
 > Apri il menu di UpdateBar e attiva **Avvia al login** per averla sempre attiva.
 
 ### Aggiornare UpdateBar
 
-```bash
-git pull && ./build.sh
-```
+Scarica l'ultima Release, oppure dai sorgenti: `git pull && ./build.sh`
 
 ### Disinstallare
 
@@ -119,7 +126,8 @@ UpdateBar/
 ├── UpdateBar.swift   # tutta l'app: modello, checker, icona, menu
 ├── Info.plist        # LSUIElement = niente Dock
 ├── AppIcon.icns      # icona dell'app
-├── build.sh          # compila, firma, installa, avvia
+├── build.sh          # compila, firma, installa, avvia (--ci: crea lo zip)
+├── .github/workflows # build e Release automatiche
 └── assets/           # immagini del README
 ```
 
@@ -152,7 +160,7 @@ Su alcuni Mac (gestiti da un'organizzazione o con aggiornamenti posticipati) <co
 <details>
 <summary><b>macOS dice che l'app non può essere aperta</b></summary>
 <br>
-Se l'hai ricevuta già compilata da qualcun altro, la firma è ad-hoc: tasto destro sull'app → <b>Apri</b>. Compilandola tu con <code>build.sh</code> non succede.
+La versione scaricata non è firmata con un Developer ID Apple (costa 99 $/anno). Vai in <b>Impostazioni di Sistema → Privacy e sicurezza → Apri comunque</b>, oppure togli la quarantena con <code>xattr -dr com.apple.quarantine /Applications/UpdateBar.app</code>. Compilandola tu con <code>build.sh</code> non succede.
 </details>
 
 <details>
@@ -166,7 +174,8 @@ I soli Command Line Tools non includono il plugin delle macro di SwiftUI. Update
 - [ ] Aggiornamenti Homebrew (`brew outdated`)
 - [ ] Aggiornamenti App Store (`mas outdated`)
 - [ ] Intervallo di controllo configurabile
-- [ ] Release precompilate e firmate
+- [x] Release precompilate (universal binary)
+- [ ] Firma con Developer ID e notarizzazione
 - [ ] Localizzazione in inglese
 - [ ] Sito con GitHub Pages
 
