@@ -4,74 +4,74 @@
 
 # UpdateBar
 
-**Gli aggiornamenti di macOS, a colpo d'occhio. Stile Windows Update, ma per Mac.**
+**macOS updates at a glance. Windows Update style, for your Mac.**
 
-Un'app leggerissima per la menu bar che controlla gli aggiornamenti di sistema<br>
-e te li segnala con due frecce e un puntino colorato.
+A tiny menu bar app that checks for system updates<br>
+and shows them with two arrows and a colored dot.
 
-[![macOS](https://img.shields.io/badge/macOS-13%2B-000000?logo=apple&logoColor=white)](#requisiti)
+[![macOS](https://img.shields.io/badge/macOS-13%2B-000000?logo=apple&logoColor=white)](#requirements)
 [![Swift](https://img.shields.io/badge/Swift-SwiftUI-F05138?logo=swift&logoColor=white)](UpdateBar.swift)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/AndreaPolazzo/UpdateBar?label=download)](https://github.com/AndreaPolazzo/UpdateBar/releases/latest)
 
-[Funzionalità](#-funzionalità) · [Installazione](#-installazione) · [Come funziona](#-come-funziona) · [FAQ](#-faq) · [Roadmap](#-roadmap)
+[Features](#-features) · [Install](#-install) · [How it works](#%EF%B8%8F-how-it-works) · [FAQ](#-faq) · [Roadmap](#%EF%B8%8F-roadmap)
 
 </div>
 
 ---
 
-## ✨ Perché
+## ✨ Why
 
-Su Windows sai sempre se c'è un aggiornamento: l'icona nella barra delle applicazioni ti avvisa senza disturbare.
-Su macOS il badge rosso finisce dentro Impostazioni di Sistema, dove nessuno guarda.
+On Windows you always know when an update is waiting: a small icon in the taskbar tells you, without getting in the way.
+On macOS the red badge is buried inside System Settings, where nobody looks.
 
-**UpdateBar** porta quell'indicatore nella menu bar del Mac, e ci aggiunge un'informazione in più: **che tipo** di aggiornamento ti aspetta.
+**UpdateBar** brings that indicator to the Mac menu bar, and adds one more piece of information: **what kind** of update is waiting for you.
 
 <div align="center">
-<img src="assets/states.png" width="820" alt="Stati dell'icona in menu bar">
+<img src="assets/states.png" width="820" alt="Menu bar icon states">
 </div>
 
-## 🎨 I colori
+## 🎨 Colors
 
-| Icona | Stato | Esempio |
+| Icon | Meaning | Example |
 |:---:|---|---|
-| ⚪️ nessun puntino | Sei aggiornato | — |
-| 🔵 blu | Altri aggiornamenti | Command Line Tools, Safari, risposte rapide di sicurezza |
-| 🟡 giallo | Aggiornamento minore di macOS | 27.1 → 27.2 |
-| 🔴 rosso | Nuova versione maggiore di macOS | 26 → 27 |
+| ⚪️ no dot | You're up to date | — |
+| 🔵 blue | Other updates | Command Line Tools, Safari, Rapid Security Responses |
+| 🟡 yellow | Minor macOS update | 27.1 → 27.2 |
+| 🔴 red | Major macOS upgrade | 26 → 27 |
 
-Se ci sono più aggiornamenti insieme, il puntino mostra **il più importante**.
-Mentre controlla, le frecce diventano semitrasparenti.
+When several updates are available, the dot shows **the most important one**.
+While a check is running, the arrows are dimmed.
 
-## 🚀 Funzionalità
+## 🚀 Features
 
-- **Controllo automatico** all'avvio e poi ogni 4 ore
-- **Controlla ora** dal menu, con scorciatoia <kbd>⌘</kbd> <kbd>R</kbd>
-- **Notifiche native** di macOS, una sola volta per ogni nuovo aggiornamento
-- **Elenco degli update** disponibili, con avviso se richiedono il riavvio
-- **Un click** su un aggiornamento apre direttamente *Impostazioni → Aggiornamento Software*
-- **Avvia al login** con un interruttore (usa `SMAppService`, niente LaunchAgent a mano)
-- **Nessuna icona nel Dock**: vive solo in menu bar
-- **Si adatta** automaticamente a menu bar chiara e scura
-- **Zero dipendenze**: un solo file Swift, compilabile senza Xcode
+- **Automatic checks** at launch and every 4 hours
+- **Check now** from the menu, or with <kbd>⌘</kbd> <kbd>R</kbd>
+- **Native macOS notifications**, sent only once per new update
+- **List of available updates**, flagged when a restart is required
+- **One click** on an update opens *System Settings → Software Update*
+- **Launch at login** toggle (uses `SMAppService`, no hand-written LaunchAgents)
+- **No Dock icon**: it lives in the menu bar only
+- **Follows** light and dark menu bars automatically
+- **Zero dependencies**: a single Swift file, builds without Xcode
 
-## 📦 Installazione
+## 📦 Install
 
-### Download (consigliato)
+### Download (recommended)
 
-1. Scarica **[`UpdateBar.dmg`](https://github.com/AndreaPolazzo/UpdateBar/releases/latest/download/UpdateBar.dmg)** dall'ultima [Release](https://github.com/AndreaPolazzo/UpdateBar/releases/latest)
-2. Aprilo e trascina **UpdateBar** sulla cartella **Applicazioni**
-3. Aprila. La prima volta macOS la blocca perché non è firmata con un Developer ID Apple:
-   vai in **Impostazioni di Sistema → Privacy e sicurezza** e clicca **Apri comunque**
+1. Download **[`UpdateBar.dmg`](https://github.com/AndreaPolazzo/UpdateBar/releases/latest/download/UpdateBar.dmg)** from the latest [Release](https://github.com/AndreaPolazzo/UpdateBar/releases/latest)
+2. Open it and drag **UpdateBar** onto the **Applications** folder
+3. Launch it. The first time, macOS blocks it because it isn't signed with an Apple Developer ID:
+   go to **System Settings → Privacy & Security** and click **Open Anyway**
 
 > [!NOTE]
-> In alternativa, da Terminale: `xattr -dr com.apple.quarantine /Applications/UpdateBar.app`
+> Alternatively, from Terminal: `xattr -dr com.apple.quarantine /Applications/UpdateBar.app`
 
-Funziona su Mac Apple Silicon e Intel (universal binary). Nella Release c'è anche `UpdateBar.zip` se preferisci.
+Runs on both Apple Silicon and Intel Macs (universal binary). A `UpdateBar.zip` is also attached to every Release if you prefer it.
 
-### Compilare dai sorgenti
+### Build from source
 
-Serve solo un Mac con i **Command Line Tools** (non Xcode):
+All you need is a Mac with the **Command Line Tools** (no Xcode):
 
 ```bash
 xcode-select --install
@@ -80,125 +80,135 @@ cd UpdateBar
 ./build.sh
 ```
 
-Lo script compila, firma ad-hoc, installa l'app in `/Applications` e la avvia.
-Da quel momento la cartella clonata non serve più.
+The script compiles, ad-hoc signs, installs the app into `/Applications` and launches it.
+After that, the cloned folder is no longer needed.
 
 > [!TIP]
-> Apri il menu di UpdateBar e attiva **Avvia al login** per averla sempre attiva.
+> Open the UpdateBar menu and turn on **Launch at login** to keep it always running.
 
-### Aggiornare UpdateBar
+### Updating
 
-Scarica l'ultima Release, oppure dai sorgenti: `git pull && ./build.sh`
+Download the latest Release, or from source: `git pull && ./build.sh`
 
-### Disinstallare
+### Uninstalling
 
-1. Menu di UpdateBar → disattiva **Avvia al login** → **Esci**
-2. Trascina `/Applications/UpdateBar.app` nel Cestino
+1. UpdateBar menu → turn off **Launch at login** → **Quit**
+2. Drag `/Applications/UpdateBar.app` to the Trash
 
-## ⚙️ Come funziona
+### Requirements
 
-UpdateBar non usa API private né servizi esterni. Sotto il cofano:
+- macOS 13 Ventura or later
+- Apple Silicon or Intel
+
+## ⚙️ How it works
+
+UpdateBar uses no private APIs and no external services. Under the hood:
 
 ```
-                 ogni 4 ore / ⌘R
+                 every 4 hours / ⌘R
                         │
                         ▼
         /usr/sbin/softwareupdate --list
                         │
                         ▼
-     parsing di "Label" + "Title, Version, Action"
+     parse "Label" + "Title, Version, Action"
                         │
                         ▼
   ┌─────────────────────┼──────────────────────┐
   │                     │                      │
- non è macOS     macOS, stessa major     macOS, major > attuale
-  🔵 blu            🟡 giallo                🔴 rosso
+ not macOS      macOS, same major      macOS, major > current
+  🔵 blue           🟡 yellow                🔴 red
 ```
 
-- La versione attuale viene letta con `ProcessInfo.operatingSystemVersion`
-- L'icona è disegnata a runtime partendo dal simbolo SF `arrow.triangle.2.circlepath`, colorata con `labelColor` per seguire il tema della menu bar
-- Il puntino ha un bordo trasparente, come l'indicatore di Windows
+- The current version is read from `ProcessInfo.operatingSystemVersion`
+- The icon is drawn at runtime from the SF Symbol `arrow.triangle.2.circlepath`, tinted with `labelColor` so it matches the menu bar theme
+- The dot has a transparent ring around it, just like the Windows indicator
 
-### Struttura del progetto
+### Project structure
 
 ```
 UpdateBar/
-├── UpdateBar.swift   # tutta l'app: modello, checker, icona, menu
-├── Info.plist        # LSUIElement = niente Dock
-├── AppIcon.icns      # icona dell'app
-├── build.sh          # compila, firma, installa, avvia (--ci: crea DMG e zip)
-├── .github/workflows # build e Release automatiche
-└── assets/           # immagini del README
+├── UpdateBar.swift   # the whole app: model, checker, icon, menu
+├── Info.plist        # LSUIElement = no Dock icon
+├── AppIcon.icns      # app icon
+├── build.sh          # build, sign, install, launch (--ci: create DMG and zip)
+├── .github/workflows # automated builds and Releases
+└── assets/           # README images
 ```
+
+### Releases
+
+Every push to `main` builds the app on a GitHub-hosted Mac and publishes the Release `v<version>` with the DMG and the zip.
+To ship a new version, bump `CFBundleShortVersionString` in `Info.plist`.
 
 ## ❓ FAQ
 
 <details>
-<summary><b>Perché non è sull'App Store?</b></summary>
+<summary><b>Why isn't it on the App Store?</b></summary>
 <br>
-Per leggere gli aggiornamenti deve eseguire <code>softwareupdate</code>, cosa che la sandbox dell'App Store non permette.
+To read available updates it has to run <code>softwareupdate</code>, which the App Store sandbox doesn't allow.
 </details>
 
 <details>
-<summary><b>Installa gli aggiornamenti da sola?</b></summary>
+<summary><b>Does it install updates by itself?</b></summary>
 <br>
-No, di proposito. Installare aggiornamenti di sistema richiede privilegi di amministratore: UpdateBar si limita ad avvisarti e ad aprire Aggiornamento Software.
+No, on purpose. Installing system updates requires administrator privileges: UpdateBar only lets you know and opens Software Update.
 </details>
 
 <details>
-<summary><b>Il primo controllo è lento</b></summary>
+<summary><b>The first check is slow</b></summary>
 <br>
-È normale: <code>softwareupdate --list</code> contatta i server Apple e può impiegare 20–60 secondi. Nel frattempo le frecce sono semitrasparenti.
+That's expected: <code>softwareupdate --list</code> talks to Apple's servers and can take 20–60 seconds. The arrows stay dimmed in the meantime.
 </details>
 
 <details>
-<summary><b>Non vedo il puntino rosso anche se esiste una nuova versione di macOS</b></summary>
+<summary><b>I don't see the red dot even though a new macOS version is out</b></summary>
 <br>
-Su alcuni Mac (gestiti da un'organizzazione o con aggiornamenti posticipati) <code>softwareupdate</code> non elenca gli upgrade maggiori, quindi UpdateBar non può vederli.
+On some Macs (managed by an organization, or with deferred updates) <code>softwareupdate</code> doesn't list major upgrades, so UpdateBar can't see them either.
 </details>
 
 <details>
-<summary><b>macOS dice che l'app non può essere aperta</b></summary>
+<summary><b>macOS says the app can't be opened</b></summary>
 <br>
-La versione scaricata non è firmata con un Developer ID Apple (costa 99 $/anno). Vai in <b>Impostazioni di Sistema → Privacy e sicurezza → Apri comunque</b>, oppure togli la quarantena con <code>xattr -dr com.apple.quarantine /Applications/UpdateBar.app</code>. Compilandola tu con <code>build.sh</code> non succede.
+The downloaded build isn't signed with an Apple Developer ID (that costs $99/year). Go to <b>System Settings → Privacy & Security → Open Anyway</b>, or remove the quarantine flag with <code>xattr -dr com.apple.quarantine /Applications/UpdateBar.app</code>. Building it yourself with <code>build.sh</code> avoids this.
 </details>
 
 <details>
-<summary><b>Errore su <code>@State</code> / <code>SwiftUIMacros</code> in compilazione</b></summary>
+<summary><b>Build error about <code>@State</code> / <code>SwiftUIMacros</code></b></summary>
 <br>
-I soli Command Line Tools non includono il plugin delle macro di SwiftUI. UpdateBar è scritta apposta senza macro, quindi se vedi questo errore stai compilando una versione modificata.
+The Command Line Tools alone don't ship the SwiftUI macro plugin. UpdateBar is written without macros on purpose, so if you see this error you're building a modified version.
 </details>
 
 ## 🗺️ Roadmap
 
-- [ ] Aggiornamenti Homebrew (`brew outdated`)
-- [ ] Aggiornamenti App Store (`mas outdated`)
-- [ ] Intervallo di controllo configurabile
-- [x] Release precompilate (DMG, universal binary)
-- [ ] Firma con Developer ID e notarizzazione
-- [ ] Localizzazione in inglese
-- [ ] Sito con GitHub Pages
+- [x] Prebuilt Releases (DMG, universal binary)
+- [ ] Homebrew updates (`brew outdated`)
+- [ ] App Store updates (`mas outdated`)
+- [ ] Configurable check interval
+- [ ] English localization of the app UI
+- [ ] Developer ID signing and notarization
+- [ ] GitHub Pages website
 
-## 🤝 Contribuire
+## 🤝 Contributing
 
-Issue e pull request sono benvenute. Per modifiche grosse apri prima una issue per discuterne.
+Issues and pull requests are welcome. For bigger changes, please open an issue first to discuss it.
 
-1. Fai un fork del progetto
-2. Crea un branch: `git checkout -b feature/nome-feature`
-3. Fai commit: `git commit -m "Aggiunge nome-feature"`
-4. Push: `git push origin feature/nome-feature`
-5. Apri una Pull Request
+1. Fork the project
+2. Create a branch: `git checkout -b feature/my-feature`
+3. Commit: `git commit -m "Add my-feature"`
+4. Push: `git push origin feature/my-feature`
+5. Open a Pull Request
 
-## 📄 Licenza
+## 📄 License
 
-Distribuito sotto licenza MIT. Vedi [`LICENSE`](LICENSE).
+Distributed under the MIT License. See [`LICENSE`](LICENSE).
 
 ---
 
 <div align="center">
 
-Fatto con ☕ da [**Andrea Polazzo**](https://andreapolazzo.com)
+Made with ☕ by [**Andrea Polazzo**](https://andreapolazzo.com)
 
-Se ti è utile, lascia una ⭐
+If you find it useful, leave a ⭐
 
 </div>
