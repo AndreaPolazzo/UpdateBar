@@ -182,28 +182,63 @@ enum BadgeState: Int, Comparable {
     }
 }
 
-/// Icona stile Windows Update: due frecce + puntino colorato
+/// Icona stile Windows Update: due frecce spesse (stessa forma dell'icona dell'app) + puntino colorato
 enum StatusIcon {
+    // Geometria dell'icona dell'app (spazio 1024×1024, y verso il basso)
+    private static let c: CGFloat = 512, r: CGFloat = 232, stroke: CGFloat = 78
+    private static let arcs: [(CGFloat, CGFloat)] = [(165, 32), (345, 212)]
+    private static let heads: [[CGPoint]] = [
+        [CGPoint(x: 756.4, y: 465.4), CGPoint(x: 781.9, y: 308.0), CGPoint(x: 603.8, y: 419.3)],
+        [CGPoint(x: 267.6, y: 558.6), CGPoint(x: 242.1, y: 716.0), CGPoint(x: 420.2, y: 604.7)],
+    ]
+
     static func make(_ state: BadgeState, dimmed: Bool) -> NSImage {
-        let size = NSSize(width: 20, height: 16)
-        let config = NSImage.SymbolConfiguration(pointSize: 14, weight: .medium)
-        let symbol = NSImage(systemSymbolName: "arrow.triangle.2.circlepath",
-                             accessibilityDescription: "Aggiornamenti")!
-            .withSymbolConfiguration(config)!
+        let size = NSSize(width: 20, height: 17)
 
-        let image = NSImage(size: size, flipped: false) { rect in
-            // frecce, colorate col colore del testo della menu bar (chiaro/scuro)
-            let s = symbol.size
-            let r = NSRect(x: (rect.width - s.width) / 2, y: (rect.height - s.height) / 2,
-                           width: s.width, height: s.height)
-            symbol.draw(in: r)
-            NSColor.labelColor.withAlphaComponent(dimmed ? 0.45 : 1).setFill()
-            rect.fill(using: .sourceAtop)
+        let image = NSImage(size: size, flipped: true) { rect in
+            // 1024 → punti, centrato
+            let s: CGFloat = 16.5 / 560
+            func p(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
+                CGPoint(x: rect.midX + (x - c) * s, y: rect.midY + (y - c) * s)
+            }
 
+            NSColor.labelColor.withAlphaComponent(dimmed ? 0.45 : 1).set()
+
+            // archi
+            for (a0, a1) in arcs {
+                let path = NSBezierPath()
+                path.lineWidth = stroke * s
+                path.lineCapStyle = .round
+                let steps = 32
+                for i in 0...steps {
+                    let deg = a0 + (a1 - a0) * CGFloat(i) / CGFloat(steps)
+                    let rad = deg * .pi / 180
+                    let pt = p(c + r * cos(rad), c - r * sin(rad))
+                    i == 0 ? path.move(to: pt) : path.line(to: pt)
+                }
+                path.stroke()
+            }
+
+            // punte
+            for tri in heads {
+                let path = NSBezierPath()
+                path.move(to: p(tri[0].x, tri[0].y))
+                path.line(to: p(tri[1].x, tri[1].y))
+                path.line(to: p(tri[2].x, tri[2].y))
+                path.close()
+                path.lineWidth = 18 * s
+                path.lineJoinStyle = .round
+                path.fill()
+                path.stroke()
+            }
+
+            // puntino in basso a destra, con bordo trasparente
             guard let color = state.color else { return true }
             let d: CGFloat = 7
-            let dot = NSRect(x: rect.maxX - d - 0.5, y: 0.5, width: d, height: d)
-            // bordo trasparente attorno al puntino, come su Windows
+            let center = p(742, 742)
+            let dot = NSRect(x: min(center.x - d / 2, rect.maxX - d - 0.5),
+                             y: min(center.y - d / 2, rect.maxY - d - 0.5),
+                             width: d, height: d)
             NSGraphicsContext.current?.compositingOperation = .clear
             NSBezierPath(ovalIn: dot.insetBy(dx: -1.5, dy: -1.5)).fill()
             NSGraphicsContext.current?.compositingOperation = .sourceOver
@@ -212,6 +247,7 @@ enum StatusIcon {
             return true
         }
         image.isTemplate = false
+        image.accessibilityDescription = "Aggiornamenti"
         return image
     }
 }
