@@ -54,7 +54,7 @@ img{display:block;max-width:100%}
 .sticky{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:flex;align-items:center;justify-content:center}
 
 /* ---------- hero ---------- */
-#hero{height:320vh}
+#hero{height:210vh}
 #hero .sticky{flex-direction:column;gap:clamp(20px,4vh,40px);padding:80px 16px 24px}
 .glow{position:absolute;width:900px;height:900px;border-radius:50%;background:radial-gradient(circle,rgba(42,140,255,.28),transparent 60%);filter:blur(20px);pointer-events:none}
 .icon-stage{position:relative;width:min(52vmin,380px);aspect-ratio:1}
@@ -377,28 +377,28 @@ footer .links{display:flex;gap:20px}
   function renderHero() {
     const p = progress(hero);
     // background squircle
-    setPiece(pieces.bg, ease(seg(p, 0, .22)), { y: 140, r: -14, s: .55 });
+    setPiece(pieces.bg, ease(seg(p, 0, .14)), { y: 140, r: -14, s: .55 });
     // arrows sweep in along their arc
-    setPiece(pieces.a1, ease(seg(p, .14, .36)), { x: -260, y: -220, r: -80, s: .7 });
-    setPiece(pieces.a2, ease(seg(p, .2, .42)), { x: 260, y: 220, r: -80, s: .7 });
+    setPiece(pieces.a1, ease(seg(p, .06, .22)), { x: -260, y: -220, r: -80, s: .7 });
+    setPiece(pieces.a2, ease(seg(p, .1, .26)), { x: 260, y: 220, r: -80, s: .7 });
     // arrowheads snap on
-    setPiece(pieces.h1, back(seg(p, .34, .46)), { x: 160, y: -60, r: 40, s: .2 });
-    setPiece(pieces.h2, back(seg(p, .4, .52)), { x: -160, y: 60, r: 40, s: .2 });
+    setPiece(pieces.h1, back(seg(p, .22, .3)), { x: 160, y: -60, r: 40, s: .2 });
+    setPiece(pieces.h2, back(seg(p, .26, .34)), { x: -160, y: 60, r: 40, s: .2 });
     // the dot drops in last
-    setPiece(pieces.dot, back(seg(p, .5, .62)), { y: -380, s: .1 });
+    setPiece(pieces.dot, back(seg(p, .32, .42)), { y: -380, s: .1 });
     // headline words
     words.forEach((w, i) => {
-      const t = ease(seg(p, .52 + i * .05, .7 + i * .05));
+      const t = ease(seg(p, .38 + i * .05, .56 + i * .05));
       w.style.transform = `translateY(${(1 - t) * 60}px) rotate(${(1 - t) * (i % 2 ? 6 : -6)}deg)`;
       w.style.opacity = t;
     });
-    const tSub = ease(seg(p, .78, .9));
+    const tSub = ease(seg(p, .64, .78));
     [sub, meta].forEach(el => { el.style.opacity = tSub; el.style.transform = `translateY(${(1 - tSub) * 20}px)`; });
-    const tCta = back(seg(p, .82, .95));
+    const tCta = back(seg(p, .68, .84));
     cta.style.opacity = clamp(tCta); cta.style.transform = `scale(${lerp(.85, 1, tCta)})`;
     hint.style.opacity = 1 - seg(p, 0, .08);
-    glow.style.opacity = lerp(.25, 1, seg(p, .1, .6));
-    glow.style.transform = `scale(${lerp(.6, 1.1, seg(p, 0, .7))})`;
+    glow.style.opacity = lerp(.25, 1, seg(p, .05, .4));
+    glow.style.transform = `scale(${lerp(.6, 1.1, seg(p, 0, .5))})`;
   }
 
   /* ---------- STATES ---------- */
