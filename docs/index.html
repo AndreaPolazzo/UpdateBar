@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UpdateBar — macOS updates at a glance</title>
+<meta name="description" content="A tiny macOS menu bar app that shows system updates Windows Update style: two arrows and a colored dot.">
+<meta property="og:title" content="UpdateBar — macOS updates at a glance">
+<meta property="og:description" content="Two arrows and a colored dot in your menu bar. Blue, yellow or red, depending on the update.">
+<meta property="og:image" content="https://andreapolazzo.github.io/UpdateBar/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07090f;
+  --bg2:#0d111b;
+  --panel:#121726;
+  --line:rgba(255,255,255,.08);
+  --text:#eef1f8;
+  --muted:#8b93a7;
+  --blue:#008cff;
+  --yellow:#ffc700;
+  --red:#ff3b30;
+  --accent:#2a8cff;
+  --accent2:#0a3fb8;
+  --radius:22px;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:"Inter Tight",-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.5;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+
+/* ---------- nav ---------- */
+.nav{position:fixed;inset:0 0 auto 0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px clamp(16px,4vw,40px);background:rgba(7,9,15,.6);backdrop-filter:saturate(160%) blur(18px);-webkit-backdrop-filter:saturate(160%) blur(18px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em}
+.brand img{width:28px;height:28px}
+.nav-links{display:flex;align-items:center;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;font-weight:600;font-size:15px;transition:transform .2s,background .2s,border-color .2s}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:linear-gradient(180deg,#3d97ff,#1366e8);box-shadow:0 8px 30px -8px rgba(42,140,255,.7),inset 0 1px 0 rgba(255,255,255,.25)}
+.btn-ghost{border:1px solid var(--line);background:rgba(255,255,255,.03)}
+.btn-ghost:hover{border-color:rgba(255,255,255,.2)}
+.btn svg{width:18px;height:18px}
+.btn-lg{padding:15px 26px;font-size:17px}
+@media (max-width:560px){.nav .btn-ghost span{display:none}.btn{padding:9px 14px}}
+
+/* ---------- generic scroll scenes ---------- */
+.scene{position:relative}
+.sticky{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:flex;align-items:center;justify-content:center}
+
+/* ---------- hero ---------- */
+#hero{height:320vh}
+#hero .sticky{flex-direction:column;gap:clamp(20px,4vh,40px);padding:80px 16px 24px}
+.glow{position:absolute;width:900px;height:900px;border-radius:50%;background:radial-gradient(circle,rgba(42,140,255,.28),transparent 60%);filter:blur(20px);pointer-events:none}
+.icon-stage{position:relative;width:min(52vmin,380px);aspect-ratio:1}
+.icon-stage svg{width:100%;height:100%;overflow:visible}
+.icon-stage .piece{transform-box:view-box;transform-origin:512px 512px;will-change:transform,opacity}
+.hero-copy{text-align:center;max-width:760px;position:relative}
+.hero-copy h1{font-size:clamp(40px,7.4vw,92px);line-height:.98;letter-spacing:-.045em;font-weight:800}
+.hero-copy h1 .w{display:inline-block;will-change:transform,opacity}
+.hero-copy p{margin-top:18px;color:var(--muted);font-size:clamp(17px,2.1vw,21px)}
+.hero-cta{display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap}
+.hero-meta{margin-top:14px;font-size:13px;color:var(--muted)}
+.scroll-hint{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:8px}
+.scroll-hint i{width:1px;height:34px;background:linear-gradient(var(--muted),transparent);animation:drip 1.8s ease-in-out infinite}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* ---------- menu bar scene ---------- */
+#states{height:460vh}
+#states .sticky{flex-direction:column;padding:70px 16px 16px;gap:clamp(18px,3vh,32px)}
+.section-kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+.section-title{font-size:clamp(32px,5vw,60px);font-weight:800;letter-spacing:-.04em;line-height:1.02;text-align:center}
+.desktop{position:relative;width:min(960px,100%);border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:
+  radial-gradient(120% 90% at 20% 0%,#2b3a8f 0%,transparent 55%),
+  radial-gradient(90% 90% at 100% 100%,#7a2a7a 0%,transparent 55%),
+  linear-gradient(160deg,#151a33,#0b0e1a);box-shadow:0 40px 120px -40px rgba(0,0,0,.8)}
+.menubar{display:flex;align-items:center;justify-content:space-between;height:34px;padding:0 14px;background:rgba(20,22,32,.55);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);font-size:13px;font-weight:500;color:#e8eaf2}
+.menubar .left{display:flex;gap:18px;align-items:center;white-space:nowrap;overflow:hidden}
+.menubar .left b{font-weight:700}
+.menubar .right{display:flex;gap:14px;align-items:center;white-space:nowrap}
+.mb-ico{width:18px;height:14px;opacity:.9}
+.ub{position:relative;display:grid;place-items:center;width:30px;height:24px;border-radius:6px;background:rgba(255,255,255,.14)}
+.ub svg{width:20px;height:16px}
+.ub .dot{transition:fill .35s ease, r .35s cubic-bezier(.34,1.56,.64,1)}
+@media (max-width:640px){.menubar .left span:nth-child(n+3){display:none}.menubar .right .hide-s{display:none}}
+.desk-body{position:relative;height:clamp(250px,42vh,360px)}
+.dropdown{position:absolute;top:6px;right:clamp(70px,16%,170px);width:min(330px,82%);border-radius:12px;background:rgba(36,38,50,.78);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.12);box-shadow:0 20px 60px -10px rgba(0,0,0,.7);padding:5px;font-size:13px;transform-origin:top right;will-change:transform,opacity}
+.dropdown .row{padding:5px 10px;border-radius:6px;display:flex;justify-content:space-between;gap:10px;color:#e8eaf2;will-change:transform,opacity}
+.dropdown .row.dim{color:#9aa0b3}
+.dropdown .row.hl{background:#2a6df5}
+.dropdown .sep{height:1px;background:rgba(255,255,255,.1);margin:5px 8px}
+.dropdown kbd{font-family:inherit;color:#9aa0b3}
+.state-caption{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.chip{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:14px;transition:all .35s ease;background:rgba(255,255,255,.02)}
+.chip i{width:10px;height:10px;border-radius:50%;background:var(--c,transparent);box-shadow:0 0 0 1.5px rgba(255,255,255,.25) inset}
+.chip.on{color:var(--text);border-color:color-mix(in srgb,var(--c,#fff) 60%,transparent);background:color-mix(in srgb,var(--c,#fff) 12%,transparent);transform:translateY(-2px)}
+.state-desc{min-height:3.2em;text-align:center;color:var(--muted);font-size:clamp(15px,1.8vw,18px);max-width:620px}
+.state-desc b{color:var(--text)}
+
+/* ---------- features (assemble) ---------- */
+#features{height:300vh}
+#features .sticky{flex-direction:column;padding:70px 16px 16px;gap:clamp(20px,4vh,40px)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:min(1040px,100%)}
+@media (max-width:860px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:520px){.grid{grid-template-columns:1fr 1fr;gap:10px}.card p{display:none}}
+.card{position:relative;padding:22px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015));border:1px solid var(--line);will-change:transform,opacity;overflow:hidden}
+.card::after{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(400px 120px at 0 0,rgba(42,140,255,.12),transparent 70%);pointer-events:none}
+.card .ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;background:rgba(42,140,255,.14);color:#6cb4ff;margin-bottom:14px}
+.card .ic svg{width:22px;height:22px}
+.card h3{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.card p{color:var(--muted);font-size:14.5px;margin-top:6px}
+
+/* ---------- how it works ---------- */
+.flow{padding:clamp(80px,14vh,140px) 16px;display:flex;flex-direction:column;align-items:center;gap:40px}
+.pipeline{display:flex;align-items:stretch;gap:0;width:min(1040px,100%)}
+.pipe{flex:1;padding:22px;border:1px solid var(--line);border-radius:18px;background:var(--bg2);position:relative;opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.pipe.in{opacity:1;transform:none}
+.pipe+.pipe{margin-left:28px}
+.pipe+.pipe::before{content:"";position:absolute;left:-29px;top:50%;width:28px;height:2px;background:linear-gradient(90deg,var(--line),var(--accent))}
+.pipe .n{font-family:var(--mono);font-size:12px;color:var(--accent)}
+.pipe h4{font-size:17px;margin:8px 0 6px}
+.pipe code{font-family:var(--mono);font-size:12.5px;color:#b9c3dd;background:rgba(255,255,255,.05);padding:2px 6px;border-radius:6px}
+.pipe p{color:var(--muted);font-size:14px}
+.pipe .dots{display:flex;gap:6px;margin-top:10px}
+.pipe .dots i{width:12px;height:12px;border-radius:50%}
+@media (max-width:820px){.pipeline{flex-direction:column}.pipe+.pipe{margin:28px 0 0}.pipe+.pipe::before{left:50%;top:-29px;width:2px;height:28px;background:linear-gradient(var(--line),var(--accent))}}
+
+/* ---------- install ---------- */
+.install{padding:clamp(60px,10vh,120px) 16px clamp(80px,12vh,140px);display:flex;flex-direction:column;align-items:center;gap:36px}
+.install-wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;width:min(1040px,100%)}
+@media (max-width:860px){.install-wrap{grid-template-columns:1fr}}
+.box{min-width:0;border:1px solid var(--line);border-radius:var(--radius);background:var(--bg2);padding:clamp(20px,3vw,32px);opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.box.in{opacity:1;transform:none}
+.box h3{font-size:22px;letter-spacing:-.02em;margin-bottom:16px}
+.steps{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:14px}
+.steps li{counter-increment:s;display:flex;gap:14px;color:#c9cfdd}
+.steps li::before{content:counter(s);flex:0 0 28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;background:rgba(42,140,255,.15);color:#6cb4ff}
+.steps b{color:var(--text)}
+.note{margin-top:18px;font-size:13.5px;color:var(--muted);padding:12px 14px;border-radius:12px;background:rgba(255,199,0,.06);border:1px solid rgba(255,199,0,.18)}
+.note code,.term code{font-family:var(--mono)}
+.term{border-radius:14px;background:#05060a;border:1px solid var(--line);overflow:hidden;font-family:var(--mono);font-size:13.5px}
+.term .bar{display:flex;gap:7px;padding:11px 14px;border-bottom:1px solid var(--line)}
+.term .bar i{width:11px;height:11px;border-radius:50%;background:#2a2f3d}
+.term pre{padding:16px 18px;overflow-x:auto;color:#cfd6e6;line-height:1.75}
+.term .c{color:#5d667c}
+.term .p{color:#6cb4ff}
+.copy{margin-top:12px;font-size:13px;color:var(--muted)}
+.dl-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);padding:30px clamp(16px,4vw,40px);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:14px}
+footer a:hover{color:var(--text)}
+footer .links{display:flex;gap:20px}
+
+@media (prefers-reduced-motion:reduce){
+  #hero,#states,#features{height:auto}
+  .sticky{position:relative;height:auto;min-height:100vh}
+  .pipe,.box{opacity:1;transform:none;transition:none}
+  .scroll-hint{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="brand" href="#"><img src="favicon.png" alt="">UpdateBar</a>
+  <div class="nav-links">
+    <a class="btn btn-ghost" href="https://github.com/AndreaPolazzo/UpdateBar">
+      <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      <span>GitHub</span>
+    </a>
+    <a class="btn btn-primary" href="https://github.com/AndreaPolazzo/UpdateBar/releases/latest/download/UpdateBar.dmg">Download</a>
+  </div>
+</nav>
+
+<!-- ============ HERO: the icon assembles while you scroll ============ -->
+<section id="hero" class="scene" data-scene>
+  <div class="sticky">
+    <div class="glow" id="heroGlow"></div>
+    <div class="icon-stage">
+      <svg viewBox="0 0 1024 1024" aria-label="UpdateBar icon">
+        <defs>
+          <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a8cff"/><stop offset="1" stop-color="#0a3fb8"/></linearGradient>
+          <linearGradient id="hl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          <filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="24" stdDeviation="30" flood-color="#000" flood-opacity=".5"/></filter>
+          <filter id="ash"><feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#001a5c" flood-opacity=".45"/></filter>
+        </defs>
+        <g class="piece" id="pBg">
+          <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#bg)" filter="url(#sh)"/>
+          <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#hl)"/>
+        </g>
+        <g filter="url(#ash)">
+          <g class="piece" id="pA1"><path d="M287.9,452.0 A232,232 0 0 1 708.7,389.1" fill="none" stroke="#fff" stroke-width="78" stroke-linecap="round"/></g>
+          <g class="piece" id="pH1"><path d="M756.4,465.4 L781.9,308.0 L603.8,419.3 Z" fill="#fff" stroke="#fff" stroke-width="18" stroke-linejoin="round"/></g>
+          <g class="piece" id="pA2"><path d="M736.1,572.0 A232,232 0 0 1 315.3,634.9" fill="none" stroke="#fff" stroke-width="78" stroke-linecap="round"/></g>
+          <g class="piece" id="pH2"><path d="M267.6,558.6 L242.1,716.0 L420.2,604.7 Z" fill="#fff" stroke="#fff" stroke-width="18" stroke-linejoin="round"/></g>
+        </g>
+        <g class="piece" id="pDot">
+          <circle cx="742" cy="742" r="92" fill="#0a3fb8"/>
+          <circle cx="742" cy="742" r="70" fill="#5ac8ff"/>
+        </g>
+      </svg>
+    </div>
+    <div class="hero-copy">
+      <h1 id="heroTitle"><span class="w">macOS</span> <span class="w">updates,</span><br><span class="w">at</span> <span class="w">a</span> <span class="w">glance.</span></h1>
+      <p id="heroSub">Windows Update style, for your Mac. Two arrows and a colored dot in the menu bar.</p>
+      <div class="hero-cta" id="heroCta">
+        <a class="btn btn-primary btn-lg" href="https://github.com/AndreaPolazzo/UpdateBar/releases/latest/download/UpdateBar.dmg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+          Download for Mac
+        </a>
+        <a class="btn btn-ghost btn-lg" href="#install">Build from source</a>
+      </div>
+      <div class="hero-meta" id="heroMeta">Free &amp; open source · macOS 13+ · Apple Silicon &amp; Intel</div>
+    </div>
+    <div class="scroll-hint" id="hint">Scroll to build it<i></i></div>
+  </div>
+</section>
+
+<!-- ============ STATES: the dot changes as you scroll ============ -->
+<section id="states" class="scene" data-scene>
+  <div class="sticky">
+    <div class="section-kicker">The dot tells you what's waiting</div>
+    <h2 class="section-title">One glance. Four states.</h2>
+
+    <div class="desktop" id="desktop">
+      <div class="menubar">
+        <div class="left"><b>Finder</b><span>File</span><span>Edit</span><span>View</span><span>Go</span><span>Window</span></div>
+        <div class="right">
+          <div class="ub" aria-label="UpdateBar">
+            <svg viewBox="0 0 20 16">
+              <g fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round">
+                <path d="M5.3 7.6 A4.6 4.6 0 0 1 13.6 6.3"/>
+                <path d="M14.7 8.4 A4.6 4.6 0 0 1 6.4 9.7"/>
+              </g>
+              <path d="M14.6 7.8 L15.1 4.7 L11.6 6.9Z M5.4 8.2 L4.9 11.3 L8.4 9.1Z" fill="#fff" stroke="#fff" stroke-width=".5" stroke-linejoin="round"/>
+              <circle class="ring" cx="16" cy="12.2" r="0" fill="rgba(40,44,58,1)"/>
+              <circle class="dot" id="mbDot" cx="16" cy="12.2" r="0" fill="transparent"/>
+            </svg>
+          </div>
+          <svg class="mb-ico hide-s" viewBox="0 0 18 14" fill="none" stroke="#e8eaf2" stroke-width="1.6" stroke-linecap="round"><path d="M2 5.5a10 10 0 0 1 14 0M4.6 8.2a6.2 6.2 0 0 1 8.8 0M7.2 10.9a2.4 2.4 0 0 1 3.6 0"/></svg>
+          <svg class="mb-ico hide-s" viewBox="0 0 26 14" fill="none" stroke="#e8eaf2" stroke-width="1.3"><rect x="1" y="2" width="21" height="10" rx="3"/><rect x="3" y="4" width="14" height="6" rx="1.5" fill="#e8eaf2" stroke="none"/><path d="M24 6v2" stroke-linecap="round"/></svg>
+          <span>Sat 9:41</span>
+        </div>
+      </div>
+      <div class="desk-body">
+        <div class="dropdown" id="dropdown">
+          <div class="row" id="ddStatus">macOS is up to date ✓</div>
+          <div id="ddList"></div>
+          <div class="row dim" id="ddLast">Last check: 9:41</div>
+          <div class="sep"></div>
+          <div class="row">Check now <kbd>⌘R</kbd></div>
+          <div class="row">Launch at login <span>✓</span></div>
+          <div class="sep"></div>
+          <div class="row">Quit <kbd>⌘Q</kbd></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="state-caption" id="chips">
+      <div class="chip" data-i="0">Up to date</div>
+      <div class="chip" data-i="1" style="--c:var(--blue)"><i></i>Other updates</div>
+      <div class="chip" data-i="2" style="--c:var(--yellow)"><i></i>Minor update</div>
+      <div class="chip" data-i="3" style="--c:var(--red)"><i></i>Major upgrade</div>
+    </div>
+    <div class="state-desc" id="stateDesc"></div>
+  </div>
+</section>
+
+<!-- ============ FEATURES: cards fly in and lock into a grid ============ -->
+<section id="features" class="scene" data-scene>
+  <div class="sticky">
+    <div class="section-kicker">Small app, everything it needs</div>
+    <h2 class="section-title">Built to stay out of your way.</h2>
+    <div class="grid" id="grid">
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><h3>Checks every 4 hours</h3><p>At launch and on a timer, or right now with ⌘R.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg></div><h3>Native notifications</h3><p>Once per new update. Never the same nag twice.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></div><h3>Light &amp; dark</h3><p>The arrows follow your menu bar, the dot keeps its color.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div><h3>One click to update</h3><p>Opens System Settings → Software Update directly.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.8 0"/></svg></div><h3>Launch at login</h3><p>One toggle. No Dock icon, it lives in the menu bar.</p></div>
+      <div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></div><h3>One Swift file</h3><p>Zero dependencies, no private APIs. Builds without Xcode.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="flow">
+  <div class="section-kicker">Under the hood</div>
+  <h2 class="section-title">No magic. Just <code style="font-family:var(--mono);font-size:.62em;letter-spacing:-.02em;color:#9cc8ff">softwareupdate</code>.</h2>
+  <div class="pipeline">
+    <div class="pipe"><span class="n">01</span><h4>Ask macOS</h4><p>Runs <code>softwareupdate --list</code>, the same source System Settings uses.</p></div>
+    <div class="pipe"><span class="n">02</span><h4>Read each update</h4><p>Parses label, title, version and whether a restart is required.</p></div>
+    <div class="pipe"><span class="n">03</span><h4>Compare versions</h4><p>Checks the update's major version against the macOS you're running.</p></div>
+    <div class="pipe"><span class="n">04</span><h4>Paint the dot</h4><p>The most important update wins.</p><div class="dots"><i style="background:var(--blue)"></i><i style="background:var(--yellow)"></i><i style="background:var(--red)"></i></div></div>
+  </div>
+</section>
+
+<!-- ============ INSTALL ============ -->
+<section class="install" id="install">
+  <div class="section-kicker">Get it</div>
+  <h2 class="section-title">Install in under a minute.</h2>
+  <div class="install-wrap">
+    <div class="box">
+      <h3>Download</h3>
+      <ol class="steps">
+        <li><span>Download <b>UpdateBar.dmg</b> from the latest release.</span></li>
+        <li><span>Open it and drag <b>UpdateBar</b> onto <b>Applications</b>.</span></li>
+        <li><span>Launch it, then turn on <b>Launch at login</b> from its menu.</span></li>
+      </ol>
+      <div class="note">First launch: UpdateBar isn't signed with an Apple Developer ID, so macOS blocks it once. Go to <b>System Settings → Privacy &amp; Security</b> and click <b>Open Anyway</b>.</div>
+      <div class="dl-row">
+        <a class="btn btn-primary" href="https://github.com/AndreaPolazzo/UpdateBar/releases/latest/download/UpdateBar.dmg">Download .dmg</a>
+        <a class="btn btn-ghost" href="https://github.com/AndreaPolazzo/UpdateBar/releases/latest">All releases</a>
+      </div>
+    </div>
+    <div class="box">
+      <h3>Build from source</h3>
+      <div class="term">
+        <div class="bar"><i></i><i></i><i></i></div>
+<pre><span class="c"># only the Command Line Tools, no Xcode</span>
+<span class="p">$</span> xcode-select --install
+<span class="p">$</span> git clone https://github.com/AndreaPolazzo/UpdateBar.git
+<span class="p">$</span> cd UpdateBar
+<span class="p">$</span> ./build.sh
+<span class="c">✓ Installed and launched: /Applications/UpdateBar.app</span></pre>
+      </div>
+      <p class="copy">The script compiles, signs, installs into Applications and launches the app. The cloned folder isn't needed afterwards.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>Made by <a href="https://andreapolazzo.com"><b>Andrea Polazzo</b></a> · MIT License</div>
+  <div class="links">
+    <a href="https://github.com/AndreaPolazzo/UpdateBar">GitHub</a>
+    <a href="https://github.com/AndreaPolazzo/UpdateBar/releases">Releases</a>
+    <a href="https://github.com/AndreaPolazzo/UpdateBar/issues">Issues</a>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const seg = (p, a, b) => clamp((p - a) / (b - a));            // 0..1 inside [a,b]
+  const ease = t => 1 - Math.pow(1 - t, 3);                      // easeOutCubic
+  const back = t => { const c = 1.7; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const $ = s => document.querySelector(s);
+
+  const progress = el => {
+    if (reduce) return 1;
+    const r = el.getBoundingClientRect();
+    const total = el.offsetHeight - innerHeight;
+    return total <= 0 ? 1 : clamp(-r.top / total);
+  };
+
+  /* ---------- HERO ---------- */
+  const hero = $('#hero');
+  const pieces = {
+    bg: $('#pBg'), a1: $('#pA1'), h1: $('#pH1'), a2: $('#pA2'), h2: $('#pH2'), dot: $('#pDot')
+  };
+  const words = [...document.querySelectorAll('#heroTitle .w')];
+  const sub = $('#heroSub'), cta = $('#heroCta'), meta = $('#heroMeta'), hint = $('#hint'), glow = $('#heroGlow');
+
+  function setPiece(el, t, { x = 0, y = 0, r = 0, s = 1 } = {}) {
+    const k = 1 - t;
+    el.style.transform = `translate(${x * k}px, ${y * k}px) rotate(${r * k}deg) scale(${lerp(s, 1, t)})`;
+    el.style.opacity = lerp(.28, 1, clamp(t * 1.6));
+  }
+
+  function renderHero() {
+    const p = progress(hero);
+    // background squircle
+    setPiece(pieces.bg, ease(seg(p, 0, .22)), { y: 140, r: -14, s: .55 });
+    // arrows sweep in along their arc
+    setPiece(pieces.a1, ease(seg(p, .14, .36)), { x: -260, y: -220, r: -80, s: .7 });
+    setPiece(pieces.a2, ease(seg(p, .2, .42)), { x: 260, y: 220, r: -80, s: .7 });
+    // arrowheads snap on
+    setPiece(pieces.h1, back(seg(p, .34, .46)), { x: 160, y: -60, r: 40, s: .2 });
+    setPiece(pieces.h2, back(seg(p, .4, .52)), { x: -160, y: 60, r: 40, s: .2 });
+    // the dot drops in last
+    setPiece(pieces.dot, back(seg(p, .5, .62)), { y: -380, s: .1 });
+    // headline words
+    words.forEach((w, i) => {
+      const t = ease(seg(p, .52 + i * .05, .7 + i * .05));
+      w.style.transform = `translateY(${(1 - t) * 60}px) rotate(${(1 - t) * (i % 2 ? 6 : -6)}deg)`;
+      w.style.opacity = t;
+    });
+    const tSub = ease(seg(p, .78, .9));
+    [sub, meta].forEach(el => { el.style.opacity = tSub; el.style.transform = `translateY(${(1 - tSub) * 20}px)`; });
+    const tCta = back(seg(p, .82, .95));
+    cta.style.opacity = clamp(tCta); cta.style.transform = `scale(${lerp(.85, 1, tCta)})`;
+    hint.style.opacity = 1 - seg(p, 0, .08);
+    glow.style.opacity = lerp(.25, 1, seg(p, .1, .6));
+    glow.style.transform = `scale(${lerp(.6, 1.1, seg(p, 0, .7))})`;
+  }
+
+  /* ---------- STATES ---------- */
+  const statesEl = $('#states');
+  const mbDot = $('#mbDot'), ring = document.querySelector('.ub .ring');
+  const chips = [...document.querySelectorAll('.chip')];
+  const desc = $('#stateDesc'), ddStatus = $('#ddStatus'), ddList = $('#ddList');
+  const dropdown = $('#dropdown');
+  const STATES = [
+    { color: null, text: '<b>No dot.</b> You\'re up to date. Nothing to do.', status: 'macOS is up to date ✓', items: [] },
+    { color: '#008cff', text: '<b>Blue:</b> other updates, like Command Line Tools, Safari or security responses.', status: null,
+      items: ['Command Line Tools for Xcode 27.1', 'Safari 27.1'] },
+    { color: '#ffc700', text: '<b>Yellow:</b> a minor macOS update, like 27.1 → 27.2.', status: null,
+      items: ['macOS 27.2 — restart required', 'Command Line Tools for Xcode 27.1'] },
+    { color: '#ff3b30', text: '<b>Red:</b> a major macOS upgrade, like 26 → 27. The most important one always wins.', status: null,
+      items: ['macOS 28 — restart required', 'macOS 27.2 — restart required', 'Safari 27.1'] },
+  ];
+  let current = -1;
+  function applyState(i) {
+    if (i === current) return;
+    current = i;
+    const s = STATES[i];
+    mbDot.setAttribute('r', s.color ? 3 : 0);
+    ring.setAttribute('r', s.color ? 4.4 : 0);
+    if (s.color) mbDot.setAttribute('fill', s.color);
+    chips.forEach((c, k) => c.classList.toggle('on', k === i));
+    desc.innerHTML = s.text;
+    ddStatus.style.display = s.status ? '' : 'none';
+    ddStatus.textContent = s.status || '';
+    ddList.innerHTML = s.items.map((t, k) =>
+      `<div class="row${k === 0 ? ' hl' : ''}" style="animation:none">${t}</div>`).join('') +
+      (s.items.length ? '<div class="sep"></div><div class="row">Open Software Update…</div>' : '');
+    [...ddList.children].forEach((el, k) => {
+      el.animate([{ opacity: 0, transform: 'translateX(14px)' }, { opacity: 1, transform: 'none' }],
+        { duration: 380, delay: k * 60, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
+    });
+  }
+  function renderStates() {
+    const p = progress(statesEl);
+    const tOpen = back(seg(p, .02, .14));
+    dropdown.style.opacity = clamp(tOpen);
+    dropdown.style.transform = `scale(${lerp(.6, 1, tOpen)}) translateY(${(1 - tOpen) * -20}px)`;
+    const i = p < .25 ? 0 : p < .5 ? 1 : p < .75 ? 2 : 3;
+    applyState(reduce ? 3 : i);
+  }
+
+  /* ---------- FEATURES ---------- */
+  const feat = $('#features');
+  const cards = [...document.querySelectorAll('#grid .card')];
+  const from = [
+    { x: -520, y: -260, r: -18 }, { x: 0, y: -420, r: 10 }, { x: 520, y: -260, r: 16 },
+    { x: -520, y: 300, r: 14 },   { x: 0, y: 440, r: -12 }, { x: 520, y: 300, r: -16 },
+  ];
+  function renderFeatures() {
+    const p = progress(feat);
+    const sc = Math.min(1, innerWidth / 1100);
+    cards.forEach((c, i) => {
+      const t = ease(seg(p, i * .07, .45 + i * .07));
+      const f = from[i];
+      c.style.transform = `translate(${f.x * sc * (1 - t)}px, ${f.y * (1 - t)}px) rotate(${f.r * (1 - t)}deg) scale(${lerp(.7, 1, t)})`;
+      c.style.opacity = clamp(t * 1.4);
+    });
+  }
+
+  /* ---------- reveal on view ---------- */
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    const sibs = [...e.target.parentElement.children];
+    e.target.style.transitionDelay = `${sibs.indexOf(e.target) * 110}ms`;
+    e.target.classList.add('in'); io.unobserve(e.target);
+  }), { threshold: .25 });
+  document.querySelectorAll('.pipe,.box').forEach(el => io.observe(el));
+
+  /* ---------- loop ---------- */
+  let ticking = false;
+  const render = () => { renderHero(); renderStates(); renderFeatures(); ticking = false; };
+  const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(render); } };
+  addEventListener('scroll', onScroll, { passive: true });
+  addEventListener('resize', onScroll);
+  render();
+})();
+</script>
+</body>
+</html>

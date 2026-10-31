@@ -14,7 +14,7 @@ and shows them with two arrows and a colored dot.
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/AndreaPolazzo/UpdateBar?label=download)](https://github.com/AndreaPolazzo/UpdateBar/releases/latest)
 
-[Features](#-features) · [Install](#-install) · [How it works](#%EF%B8%8F-how-it-works) · [FAQ](#-faq) · [Roadmap](#%EF%B8%8F-roadmap)
+[Website](https://andreapolazzo.github.io/UpdateBar/) · [Features](#-features) · [Install](#-install) · [How it works](#%EF%B8%8F-how-it-works) · [FAQ](#-faq) · [Roadmap](#%EF%B8%8F-roadmap)
 
 </div>
 
@@ -187,7 +187,7 @@ The Command Line Tools alone don't ship the SwiftUI macro plugin. UpdateBar is w
 - [ ] Configurable check interval
 - [ ] English localization of the app UI
 - [ ] Developer ID signing and notarization
-- [ ] GitHub Pages website
+- [x] [Website](https://andreapolazzo.github.io/UpdateBar/)
 
 ## 🤝 Contributing
 
