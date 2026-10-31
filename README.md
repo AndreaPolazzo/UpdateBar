@@ -59,15 +59,15 @@ Mentre controlla, le frecce diventano semitrasparenti.
 
 ### Download (consigliato)
 
-1. Scarica **[`UpdateBar.zip`](https://github.com/AndreaPolazzo/UpdateBar/releases/latest/download/UpdateBar.zip)** dall'ultima [Release](https://github.com/AndreaPolazzo/UpdateBar/releases/latest)
-2. Estrai lo zip e trascina **UpdateBar.app** in **Applicazioni**
+1. Scarica **[`UpdateBar.dmg`](https://github.com/AndreaPolazzo/UpdateBar/releases/latest/download/UpdateBar.dmg)** dall'ultima [Release](https://github.com/AndreaPolazzo/UpdateBar/releases/latest)
+2. Aprilo e trascina **UpdateBar** sulla cartella **Applicazioni**
 3. Aprila. La prima volta macOS la blocca perché non è firmata con un Developer ID Apple:
    vai in **Impostazioni di Sistema → Privacy e sicurezza** e clicca **Apri comunque**
 
 > [!NOTE]
 > In alternativa, da Terminale: `xattr -dr com.apple.quarantine /Applications/UpdateBar.app`
 
-Funziona su Mac Apple Silicon e Intel (universal binary).
+Funziona su Mac Apple Silicon e Intel (universal binary). Nella Release c'è anche `UpdateBar.zip` se preferisci.
 
 ### Compilare dai sorgenti
 
@@ -126,7 +126,7 @@ UpdateBar/
 ├── UpdateBar.swift   # tutta l'app: modello, checker, icona, menu
 ├── Info.plist        # LSUIElement = niente Dock
 ├── AppIcon.icns      # icona dell'app
-├── build.sh          # compila, firma, installa, avvia (--ci: crea lo zip)
+├── build.sh          # compila, firma, installa, avvia (--ci: crea DMG e zip)
 ├── .github/workflows # build e Release automatiche
 └── assets/           # immagini del README
 ```
@@ -174,7 +174,7 @@ I soli Command Line Tools non includono il plugin delle macro di SwiftUI. Update
 - [ ] Aggiornamenti Homebrew (`brew outdated`)
 - [ ] Aggiornamenti App Store (`mas outdated`)
 - [ ] Intervallo di controllo configurabile
-- [x] Release precompilate (universal binary)
+- [x] Release precompilate (DMG, universal binary)
 - [ ] Firma con Developer ID e notarizzazione
 - [ ] Localizzazione in inglese
 - [ ] Sito con GitHub Pages
