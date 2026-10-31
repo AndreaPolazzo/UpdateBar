@@ -47,7 +47,6 @@ While a check is running, the arrows are dimmed.
 
 - **Automatic checks** at launch and every 4 hours
 - **Check now** from the menu, or with <kbd>⌘</kbd> <kbd>R</kbd>
-- **Native macOS notifications**, sent only once per new update
 - **List of available updates**, flagged when a restart is required
 - **One click** on an update opens *System Settings → Software Update*
 - **Launch at login** toggle (uses `SMAppService`, no hand-written LaunchAgents)

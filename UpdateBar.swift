@@ -1,6 +1,5 @@
 import SwiftUI
 import AppKit
-import UserNotifications
 import ServiceManagement
 
 // MARK: - Modello
@@ -56,7 +55,6 @@ final class UpdateChecker: ObservableObject {
     /// Ogni quanto controllare (secondi)
     private let interval: TimeInterval = 4 * 60 * 60
     private var timer: Timer?
-    private var alreadyNotified: Set<String> = []
 
     init() {
         Task { await check() }
@@ -76,7 +74,6 @@ final class UpdateChecker: ObservableObject {
             updates = found
             lastError = nil
             lastCheck = Date()
-            notifyIfNew(found)
         } catch {
             lastError = error.localizedDescription
         }
@@ -146,23 +143,6 @@ final class UpdateChecker: ObservableObject {
         return dict
     }
 
-    // MARK: Notifiche
-
-    private func notifyIfNew(_ found: [SystemUpdate]) {
-        let new = found.filter { !alreadyNotified.contains($0.id) }
-        guard !new.isEmpty else { return }
-        alreadyNotified.formUnion(new.map(\.id))
-
-        let content = UNMutableNotificationContent()
-        content.title = new.count == 1
-            ? "Aggiornamento macOS disponibile"
-            : "\(new.count) aggiornamenti macOS disponibili"
-        content.body = new.map(\.title).joined(separator: "\n")
-        content.sound = .default
-
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
-        UNUserNotificationCenter.current().add(request)
-    }
 }
 
 // MARK: - UI
@@ -304,10 +284,6 @@ struct MenuContent: View {
 @main
 struct UpdateBarApp: App {
     @StateObject private var checker = UpdateChecker()
-
-    init() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
-    }
 
     var body: some Scene {
         MenuBarExtra {
