@@ -53,6 +53,7 @@ While a check is running, the arrows are dimmed.
 - **No Dock icon**: it lives in the menu bar only
 - **Follows** light and dark menu bars automatically
 - **23 languages**: follows your Mac's language (English, Italiano, Español, Français, Deutsch, Português, 日本語, 中文, 한국어, Русский and more)
+- **Updates itself**: at launch it checks GitHub Releases and offers to download the new version
 - **Zero dependencies**: a single Swift file, builds without Xcode
 
 ## 📦 Install
@@ -88,7 +89,7 @@ After that, the cloned folder is no longer needed.
 
 ### Updating
 
-Download the latest Release, or from source: `git pull && ./build.sh`
+UpdateBar tells you itself when a new version is out: at launch it asks whether to download it. Or grab the latest Release manually, or from source: `git pull && ./build.sh`
 
 ### Uninstalling
 
