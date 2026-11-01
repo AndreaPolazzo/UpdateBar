@@ -54,20 +54,21 @@ img{display:block;max-width:100%}
 .sticky{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:flex;align-items:center;justify-content:center}
 
 /* ---------- hero ---------- */
-#hero{height:210vh}
-#hero .sticky{flex-direction:column;gap:clamp(20px,4vh,40px);padding:80px 16px 24px}
+#hero{height:100vh;height:100svh}
+#hero .sticky{flex-direction:column;gap:clamp(14px,3vh,32px);padding:76px 16px 64px}
 .glow{position:absolute;width:900px;height:900px;border-radius:50%;background:radial-gradient(circle,rgba(42,140,255,.28),transparent 60%);filter:blur(20px);pointer-events:none}
-.icon-stage{position:relative;width:min(52vmin,380px);aspect-ratio:1}
+.icon-stage{position:relative;width:min(30vh,72vw,320px);aspect-ratio:1}
 .icon-stage svg{width:100%;height:100%;overflow:visible}
 .icon-stage .piece{transform-box:view-box;transform-origin:512px 512px;will-change:transform,opacity}
 .hero-copy{text-align:center;max-width:760px;position:relative}
-.hero-copy h1{font-size:clamp(40px,7.4vw,92px);line-height:.98;letter-spacing:-.045em;font-weight:800}
+.hero-copy h1{font-size:clamp(36px,min(7.4vw,8.5vh),92px);line-height:.98;letter-spacing:-.045em;font-weight:800}
 .hero-copy h1 .w{display:inline-block;will-change:transform,opacity}
 .hero-copy p{margin-top:18px;color:var(--muted);font-size:clamp(17px,2.1vw,21px)}
 .hero-cta{display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap}
 .hero-meta{margin-top:14px;font-size:13px;color:var(--muted)}
 .scroll-hint{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:8px}
 .scroll-hint i{width:1px;height:34px;background:linear-gradient(var(--muted),transparent);animation:drip 1.8s ease-in-out infinite}
+@media (max-height:900px){.scroll-hint{display:none}}
 @keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
 
 /* ---------- menu bar scene ---------- */
@@ -218,7 +219,7 @@ footer .links{display:flex;gap:20px}
       </div>
       <div class="hero-meta" id="heroMeta">Free &amp; open source · macOS 13+ · Apple Silicon &amp; Intel</div>
     </div>
-    <div class="scroll-hint" id="hint">Scroll to build it<i></i></div>
+    <div class="scroll-hint" id="hint">Scroll<i></i></div>
   </div>
 </section>
 
@@ -354,11 +355,11 @@ footer .links{display:flex;gap:20px}
   function setPiece(el, t, { x = 0, y = 0, r = 0, s = 1 } = {}) {
     const k = 1 - t;
     el.style.transform = `translate(${x * k}px, ${y * k}px) rotate(${r * k}deg) scale(${lerp(s, 1, t)})`;
-    el.style.opacity = lerp(.28, 1, clamp(t * 1.6));
+    el.style.opacity = clamp(t * 1.6);
   }
 
-  function renderHero() {
-    const p = progress(hero);
+  // Plays once on page load (time-based, not scroll-based)
+  function renderHero(p) {
     // background squircle
     setPiece(pieces.bg, ease(seg(p, 0, .14)), { y: 140, r: -14, s: .55 });
     // arrows sweep in along their arc
@@ -379,7 +380,7 @@ footer .links{display:flex;gap:20px}
     [sub, meta].forEach(el => { el.style.opacity = tSub; el.style.transform = `translateY(${(1 - tSub) * 20}px)`; });
     const tCta = back(seg(p, .68, .84));
     cta.style.opacity = clamp(tCta); cta.style.transform = `scale(${lerp(.85, 1, tCta)})`;
-    hint.style.opacity = 1 - seg(p, 0, .08);
+    hint.style.opacity = seg(p, .8, .86);
     glow.style.opacity = lerp(.25, 1, seg(p, .05, .4));
     glow.style.transform = `scale(${lerp(.6, 1.1, seg(p, 0, .5))})`;
   }
@@ -457,11 +458,24 @@ footer .links{display:flex;gap:20px}
 
   /* ---------- loop ---------- */
   let ticking = false;
-  const render = () => { renderHero(); renderStates(); renderFeatures(); ticking = false; };
+  const render = () => { renderStates(); renderFeatures(); ticking = false; };
   const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(render); } };
   addEventListener('scroll', onScroll, { passive: true });
   addEventListener('resize', onScroll);
   render();
+
+  /* ---------- hero intro animation ---------- */
+  const DURATION = 2600;                       // ms for the whole intro
+  if (reduce) { renderHero(1); return; }
+  renderHero(0);
+  let start = null;
+  const play = now => {
+    if (start === null) start = now;
+    const t = clamp((now - start) / DURATION);
+    renderHero(t * .86);                       // timeline ends at .86
+    if (t < 1) requestAnimationFrame(play);
+  };
+  setTimeout(() => requestAnimationFrame(play), 250);
 })();
 </script>
 </body>
