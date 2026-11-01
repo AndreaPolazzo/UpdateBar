@@ -423,7 +423,7 @@ footer .links{display:flex;gap:20px}
       (s.items.length ? '<div class="sep"></div><div class="row">Open Software Update…</div>' : '');
     [...ddList.children].forEach((el, k) => {
       el.animate([{ opacity: 0, transform: 'translateX(14px)' }, { opacity: 1, transform: 'none' }],
-        { duration: 380, delay: k * 60, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
+        { duration: 260, delay: k * 40, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
     });
   }
   function renderDropdown(t) {
@@ -486,7 +486,7 @@ footer .links{display:flex;gap:20px}
     if (loop) return;
     const tick = () => { idx = (idx + 1) % STATES.length; applyState(idx); };
     if (!opened) { opened = true; playOnce(600, renderDropdown); }
-    loop = setInterval(tick, 2000);
+    loop = setInterval(tick, 1100);
   };
   const stopLoop = () => { clearInterval(loop); loop = null; };
   new IntersectionObserver(([e]) => e.isIntersecting ? startLoop() : stopLoop(), { threshold: .45 }).observe(statesEl);
