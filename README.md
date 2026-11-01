@@ -52,6 +52,7 @@ While a check is running, the arrows are dimmed.
 - **Launch at login** toggle (uses `SMAppService`, no hand-written LaunchAgents)
 - **No Dock icon**: it lives in the menu bar only
 - **Follows** light and dark menu bars automatically
+- **23 languages**: follows your Mac's language (English, Italiano, Español, Français, Deutsch, Português, 日本語, 中文, 한국어, Русский and more)
 - **Zero dependencies**: a single Swift file, builds without Xcode
 
 ## 📦 Install
@@ -184,7 +185,7 @@ The Command Line Tools alone don't ship the SwiftUI macro plugin. UpdateBar is w
 - [ ] Homebrew updates (`brew outdated`)
 - [ ] App Store updates (`mas outdated`)
 - [ ] Configurable check interval
-- [ ] English localization of the app UI
+- [x] Localized in 23 languages
 - [ ] Developer ID signing and notarization
 - [x] [Website](https://andreapolazzo.github.io/UpdateBar/)
 
