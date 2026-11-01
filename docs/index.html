@@ -66,10 +66,10 @@ img{display:block;max-width:100%}
 .hero-copy p{margin-top:18px;color:var(--muted);font-size:clamp(17px,2.1vw,21px)}
 .hero-cta{display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap}
 .hero-meta{margin-top:14px;font-size:13px;color:var(--muted)}
-.scroll-hint{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:8px}
-.scroll-hint i{width:1px;height:34px;background:linear-gradient(var(--muted),transparent);animation:drip 1.8s ease-in-out infinite}
-@media (max-height:900px){.scroll-hint{display:none}}
-@keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+.scroll-hint{position:absolute;bottom:14px;left:50%;width:44px;height:44px;margin-left:-22px;display:grid;place-items:center;border-radius:50%;color:var(--muted);border:1px solid var(--line);background:rgba(255,255,255,.03);transition:color .2s,border-color .2s}
+.scroll-hint:hover{color:var(--text);border-color:rgba(255,255,255,.25)}
+.scroll-hint svg{width:20px;height:20px;animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(-3px)}50%{transform:translateY(4px)}}
 
 /* ---------- menu bar scene ---------- */
 #states{height:460vh}
@@ -219,7 +219,7 @@ footer .links{display:flex;gap:20px}
       </div>
       <div class="hero-meta" id="heroMeta">Free &amp; open source · macOS 13+ · Apple Silicon &amp; Intel</div>
     </div>
-    <div class="scroll-hint" id="hint">Scroll<i></i></div>
+    <a class="scroll-hint" id="hint" href="#states" aria-label="Scroll down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></a>
   </div>
 </section>
 
