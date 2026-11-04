@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rate UpdateBar</title>
+<meta name="description" content="Leave a review for UpdateBar. No account needed.">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07090f;--bg2:#0d111b;--line:rgba(255,255,255,.08);--text:#eef1f8;--muted:#8b93a7;
+  --accent:#2a8cff;--star:#ffc700;--red:#ff3b30;--green:#30d158;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:"Inter Tight",-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+.nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:14px clamp(16px,4vw,40px);background:rgba(7,9,15,.7);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700}
+.brand img{width:28px;height:28px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border-radius:999px;font:inherit;font-weight:600;font-size:15px;cursor:pointer;border:0;color:var(--text);transition:transform .2s,opacity .2s,background .2s}
+.btn:hover{transform:translateY(-1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-primary{background:linear-gradient(180deg,#3d97ff,#1366e8);box-shadow:0 8px 30px -8px rgba(42,140,255,.7),inset 0 1px 0 rgba(255,255,255,.25)}
+.btn-ghost{border:1px solid var(--line);background:rgba(255,255,255,.03)}
+.btn svg{width:18px;height:18px}
+
+main{max-width:760px;margin:0 auto;padding:clamp(48px,9vh,96px) 16px 80px}
+.glow{position:fixed;top:-300px;left:50%;width:900px;height:900px;margin-left:-450px;border-radius:50%;background:radial-gradient(circle,rgba(42,140,255,.22),transparent 60%);pointer-events:none;z-index:-1}
+.head{text-align:center}
+.head img{width:96px;height:96px;margin:0 auto 22px}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+h1{font-size:clamp(36px,6vw,58px);font-weight:800;letter-spacing:-.04em;line-height:1.02;margin-top:10px}
+.lead{color:var(--muted);font-size:18px;margin-top:14px}
+
+/* summary */
+.summary[hidden]{display:none}
+.summary{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:26px;color:var(--muted);font-size:15px}
+.summary .avg{font-size:34px;font-weight:800;color:var(--text);letter-spacing:-.02em}
+.mini-stars{display:flex;gap:2px}
+.mini-stars svg{width:18px;height:18px}
+
+/* cards */
+.card{margin-top:34px;border:1px solid var(--line);border-radius:22px;background:var(--bg2);padding:clamp(20px,4vw,34px)}
+.card h2{font-size:22px;letter-spacing:-.02em}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+@media (max-width:560px){.split{grid-template-columns:1fr}}
+.choice{display:flex;flex-direction:column;gap:6px;padding:18px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.02);transition:border-color .2s,background .2s}
+.choice:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.04)}
+.choice b{font-size:16px}
+.choice span{font-size:14px;color:var(--muted)}
+
+/* form */
+label{display:block;font-size:14px;font-weight:600;margin:20px 0 8px}
+label small{font-weight:400;color:var(--muted)}
+.stars{display:flex;gap:6px}
+.star{background:none;border:0;cursor:pointer;padding:2px;line-height:0;transition:transform .15s}
+.star svg{width:40px;height:40px}
+.star:hover{transform:scale(1.12)}
+.star .fill{fill:rgba(255,255,255,.1);transition:fill .15s}
+.star.on .fill{fill:var(--star)}
+.star:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px}
+.rating-label{margin-top:8px;font-size:14px;color:var(--muted);min-height:21px}
+input[type=text],textarea{width:100%;font:inherit;font-size:16px;color:var(--text);background:#05070c;border:1px solid var(--line);border-radius:12px;padding:12px 14px;transition:border-color .2s}
+input[type=text]:focus,textarea:focus{outline:none;border-color:var(--accent)}
+textarea{min-height:120px;resize:vertical}
+.count{text-align:right;font-size:12px;color:var(--muted);margin-top:6px;font-family:var(--mono)}
+.hp{position:absolute;left:-9999px}
+.turnstile{margin-top:20px;min-height:65px}
+.form-foot{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:20px;flex-wrap:wrap}
+.form-foot p{font-size:13px;color:var(--muted);max-width:360px}
+.msg{margin-top:16px;padding:12px 14px;border-radius:12px;font-size:14px;display:none}
+.msg.ok{display:block;background:rgba(48,209,88,.08);border:1px solid rgba(48,209,88,.3)}
+.msg.err{display:block;background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.3)}
+
+/* reviews list */
+.list{margin-top:44px}
+.list-head{display:flex;justify-content:space-between;align-items:baseline}
+.list-head h2{font-size:22px;letter-spacing:-.02em}
+.list-head span{font-size:14px;color:var(--muted)}
+.review{padding:20px 0;border-bottom:1px solid var(--line);opacity:0;transform:translateY(16px);transition:opacity .5s,transform .5s cubic-bezier(.2,.8,.2,1)}
+.review.in{opacity:1;transform:none}
+.review .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.review .who{font-weight:600}
+.review time{font-size:13px;color:var(--muted)}
+.review p{margin-top:8px;color:#c9cfdd;white-space:pre-wrap;word-break:break-word}
+.empty{padding:34px 20px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:16px;margin-top:16px}
+footer{text-align:center;color:var(--muted);font-size:14px;padding:30px 16px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:reduce){.review{opacity:1;transform:none;transition:none}}
+</style>
+</head>
+<body>
+<div class="glow"></div>
+
+<nav class="nav">
+  <a class="brand" href="./"><img src="favicon.png" alt="">UpdateBar</a>
+  <a class="btn btn-ghost" href="./">← Back to site</a>
+</nav>
+
+<main>
+  <section class="head">
+    <img src="icon.png" alt="UpdateBar icon">
+    <div class="kicker">Rate UpdateBar</div>
+    <h1>How's it going?</h1>
+    <p class="lead">Your feedback helps other Mac users find the app, and helps me make it better.</p>
+    <div class="summary" id="summary" hidden>
+      <span class="avg" id="avg">–</span>
+      <span class="mini-stars" id="avgStars"></span>
+      <span id="total"></span>
+    </div>
+  </section>
+
+  <!-- two ways to support -->
+  <section class="card">
+    <h2>Two ways to help</h2>
+    <div class="split">
+      <a class="choice" href="https://github.com/AndreaPolazzo/UpdateBar" target="_blank" rel="noopener">
+        <b>⭐ Star on GitHub</b>
+        <span>If you have a GitHub account. Takes one click.</span>
+      </a>
+      <a class="choice" href="#write">
+        <b>✍️ Write a review</b>
+        <span>No account needed. Just stars and a few words.</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- review form -->
+  <section class="card" id="write">
+    <h2>Write a review</h2>
+    <form id="form" novalidate>
+      <label>Your rating</label>
+      <div class="stars" id="stars" role="radiogroup" aria-label="Rating"></div>
+      <div class="rating-label" id="ratingLabel">Tap a star</div>
+
+      <label for="name">Name <small>(optional)</small></label>
+      <input type="text" id="name" name="name" maxlength="40" placeholder="Anonymous" autocomplete="nickname">
+
+      <label for="comment">Your review</label>
+      <textarea id="comment" name="comment" maxlength="600" placeholder="What do you like? What would you change?"></textarea>
+      <div class="count"><span id="chars">0</span>/600</div>
+
+      <!-- honeypot: real users never see or fill this -->
+      <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+      <!-- Cloudflare Turnstile ("I'm not a robot") -->
+      <div class="turnstile" id="turnstile"></div>
+
+      <div class="form-foot">
+        <p>Reviews are checked before they appear, to keep out spam. No email, no tracking.</p>
+        <button class="btn btn-primary" id="send" type="submit" disabled>Send review</button>
+      </div>
+      <div class="msg" id="msg" role="status"></div>
+    </form>
+  </section>
+
+  <!-- approved reviews -->
+  <section class="list">
+    <div class="list-head"><h2>Reviews</h2><span id="listCount"></span></div>
+    <div id="reviews"></div>
+  </section>
+</main>
+
+<footer>Made by <a href="https://andreapolazzo.com"><b>Andrea Polazzo</b></a> · <a href="https://github.com/AndreaPolazzo/UpdateBar">GitHub</a></footer>
+
+<script>
+/* ============ CONFIG ============
+   API_URL: the backend that saves reviews to Postgres (e.g. a Vercel function).
+            Empty = demo mode: the form works but nothing is saved.
+   TURNSTILE_SITEKEY: public site key from Cloudflare Turnstile. Empty = widget hidden. */
+const API_URL = '';
+const TURNSTILE_SITEKEY = '';
+/* ================================= */
+
+const $ = s => document.querySelector(s);
+const STAR = '<svg viewBox="0 0 24 24"><path class="fill" d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5L2.5 9.5l6.6-.9z"/></svg>';
+const LABELS = ['', 'Not for me', 'Could be better', 'It\'s okay', 'Really good', 'Love it!'];
+let rating = 0, token = '';
+
+/* ---------- star picker ---------- */
+const starsEl = $('#stars');
+for (let i = 1; i <= 5; i++) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'star'; b.innerHTML = STAR;
+  b.setAttribute('role', 'radio'); b.setAttribute('aria-label', `${i} star${i > 1 ? 's' : ''}`);
+  b.addEventListener('click', () => setRating(i));
+  b.addEventListener('mouseenter', () => paint(i));
+  b.addEventListener('mouseleave', () => paint(rating));
+  starsEl.appendChild(b);
+}
+function paint(n) { [...starsEl.children].forEach((s, k) => s.classList.toggle('on', k < n)); }
+function setRating(n) {
+  rating = n; paint(n);
+  [...starsEl.children].forEach((s, k) => s.setAttribute('aria-checked', k + 1 === n));
+  $('#ratingLabel').textContent = LABELS[n];
+  starsEl.children[n - 1].animate([{ transform: 'scale(1.35)' }, { transform: 'scale(1)' }], { duration: 260, easing: 'cubic-bezier(.34,1.56,.64,1)' });
+  validate();
+}
+
+/* ---------- validation ---------- */
+const comment = $('#comment');
+comment.addEventListener('input', () => { $('#chars').textContent = comment.value.length; validate(); });
+function validate() {
+  const needsToken = !!TURNSTILE_SITEKEY;
+  $('#send').disabled = !(rating > 0 && comment.value.trim().length >= 3 && (!needsToken || token));
+}
+
+/* ---------- Turnstile ---------- */
+if (TURNSTILE_SITEKEY) {
+  window.onTurnstileLoad = () => turnstile.render('#turnstile', {
+    sitekey: TURNSTILE_SITEKEY, theme: 'dark',
+    callback: t => { token = t; validate(); },
+    'expired-callback': () => { token = ''; validate(); },
+  });
+  const s = document.createElement('script');
+  s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad';
+  s.async = true; document.head.appendChild(s);
+} else {
+  $('#turnstile').style.display = 'none';
+}
+
+/* ---------- submit ---------- */
+$('#form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = $('#msg'); msg.className = 'msg';
+  const data = {
+    rating,
+    name: $('#name').value.trim().slice(0, 40),
+    comment: comment.value.trim().slice(0, 600),
+    website: e.target.website.value,      // honeypot
+    token,
+  };
+  $('#send').disabled = true; $('#send').textContent = 'Sending…';
+  try {
+    if (API_URL) {
+      const r = await fetch(API_URL + '/reviews', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
+      });
+      if (!r.ok) throw new Error(await r.text() || r.status);
+    } else {
+      await new Promise(r => setTimeout(r, 600)); // demo mode
+    }
+    $('#form').reset(); rating = 0; paint(0); $('#chars').textContent = 0;
+    $('#ratingLabel').textContent = 'Tap a star';
+    msg.className = 'msg ok';
+    msg.textContent = API_URL
+      ? 'Thanks! Your review will appear here once it\'s approved.'
+      : 'Demo mode: the form works, but the review was not saved (no backend connected yet).';
+    if (window.turnstile && TURNSTILE_SITEKEY) { turnstile.reset(); token = ''; }
+  } catch (err) {
+    msg.className = 'msg err';
+    msg.textContent = 'Something went wrong, please try again later.';
+  } finally {
+    $('#send').textContent = 'Send review'; validate();
+  }
+});
+
+/* ---------- approved reviews ---------- */
+const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const starRow = n => Array.from({ length: 5 }, (_, k) =>
+  STAR.replace('class="fill"', `class="fill" style="fill:${k < n ? 'var(--star)' : 'rgba(255,255,255,.12)'}"`)).join('');
+
+async function loadReviews() {
+  let reviews = [];
+  if (API_URL) {
+    try { reviews = await (await fetch(API_URL + '/reviews')).json(); } catch { reviews = []; }
+  }
+  const box = $('#reviews');
+  if (!reviews.length) {
+    box.innerHTML = '<div class="empty">No reviews yet. Be the first! ✍️</div>';
+    return;
+  }
+  const avg = reviews.reduce((a, r) => a + r.rating, 0) / reviews.length;
+  $('#summary').hidden = false;
+  $('#avg').textContent = avg.toFixed(1);
+  $('#avgStars').innerHTML = starRow(Math.round(avg));
+  $('#total').textContent = `${reviews.length} review${reviews.length > 1 ? 's' : ''}`;
+  $('#listCount').textContent = `${reviews.length} total`;
+  box.innerHTML = reviews.map(r => `
+    <article class="review">
+      <div class="top"><span class="who">${esc(r.name || 'Anonymous')}</span><time>${new Date(r.created_at).toLocaleDateString()}</time></div>
+      <div class="mini-stars" style="margin-top:6px">${starRow(r.rating)}</div>
+      <p>${esc(r.comment)}</p>
+    </article>`).join('');
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .2 });
+  document.querySelectorAll('.review').forEach((el, i) => { el.style.transitionDelay = `${(i % 5) * 80}ms`; io.observe(el); });
+}
+loadReviews();
+</script>
+</body>
+</html>
